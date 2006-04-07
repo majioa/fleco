@@ -5,6 +5,8 @@
 # $Copyright: 2005$
 # $Revision: 1.0 $
 #
+
+OS=WIN32
 BIN=strings.dll
 SRC=common.asm construc.asm convert.asm codepage.asm check.asm compare.asm currency.asm date.asm format.asm modify.asm regex.asm search.asm symbol.asm
 OBJ=$(SRC:.asm=.o) # replaces the .asm from SRC with .o
@@ -13,17 +15,16 @@ SRCDIR=src
 OBJDIR=obj
 BINDIR=bin
 LIB=
-OS=WIN32
 VPATH=src;obj;bin
 
-AS=nasm
+AS=fasm
 LD=ilink32
-#AFLAGS=-f coff -O2
+#AFLAGS=-f coff -O4
 AFLAGS=-f obj -O4 -I$(SRCDIR)/
-#LLFLAGS=-m -M -s    #Link loggings flags with ilink32
 #LFLAGS=-mi386pe -call_shared --disable-stdcall-fixup	--export-all-symbols	#Link flags with gcc
 #LFLAGS=-mi386pe -call_shared --disable-stdcall-fixup  -E   #Link flags with gcc
 #LFLAGS = -c -Tpd -aa -x -Gn -Gi -v -b:0x340000 #Link flags with ilink32
+LLFLAGS=-m -M -s    #Link loggings flags with ilink32
 LFLAGS = -Tpd -aa -x -Gn -Gi -v -b:0x340000  #Link flags with ilink32
 
 %.o: %.asm
