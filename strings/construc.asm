@@ -1,10 +1,18 @@
-	.386
-	.model flat
+;[]-----------------------------------------------------------------[]
+;|   CONSTRUC.ASM -- string constructors			     |
+;[]-----------------------------------------------------------------[]
+;
+; $Copyright: 2005$
+; $Revision: 1.1.1.1 $
+;
+;
+;AnsiString& __fastcall operator =(const AnsiString& rhs);
+;static AnsiString __fastcall StringOfChar(char ch, int count);
 
-	include constant.inc
+	%include 'constant.inc'
 
-	PUBLIC	@FastString@Unique$qqrv
 
+	EXTERN	@FastString@Unique$qqrv
 
 	PUBLIC	@FastString@$bctr$qqrv
 	PUBLIC	@FastString@$bctr$qqrxo
@@ -29,7 +37,6 @@
 	PUBLIC	@FastString@$bctr$qqrrx10FastString
 	PUBLIC	@FastString@$bdtr$qqrv
 
-
 	PUBLIC	@FastString@$basg$qqrxo
 	PUBLIC	@FastString@$basg$qqrxc
 	PUBLIC	@FastString@$basg$qqrxuc
@@ -51,41 +58,18 @@
 	PUBLIC	@FastString@$basg$qqrrx11MathVariant
 	PUBLIC	@FastString@$basg$qqrrx10FastString
 
+	GLOBAL	CopyString
+	GLOBAL	StringRedim
 
-	EXTRN	MemoryReAlloc:near
-	EXTRN	MemoryAlloc:near
-	EXTRN	MemoryFree:near
-	EXTRN	GetSystemCodepage:near
+;	 EXTRN	 @Memblock@$bctr$qqrrx8Memblock
+;	 EXTRN	 @Memblock@$bctr$qqri
+	EXTRN	@Memblock@$bdtr$qqrv
+;	 EXTRN	 @Locale@GetSystemCodepage$qqrv
+	EXTRN	@Locale@$bctr$qqrv
+	EXTRN	@Memblock@Resize$qqrul
+	EXTRN	@Memblock@$bctr$qqrul
 
-	.code
-
-
-jfe	macro	label_name
-	fstsw	ax
-	test	ah, 1000000b
-	jnz	label_name
-endm
-
-
-jfne	macro	label_name
-	fstsw	ax
-	test	ah, 1000000b
-	jz	label_name
-endm
-
-
-jfge	macro	label_name
-	fstsw	ax
-	test	ah, 1
-	jz	label_name
-endm
-
-
-jfl	macro	label_name
-	fstsw	ax
-	test	ah, 1
-	jnz	label_name
-endm
+	section _TEXT
 
 
 StringRedim	proc	near
@@ -103,27 +87,37 @@ StringRedim	proc	near
 	push	eax
 	push	ecx
 	mov	eax, [eax]
+	mov	edx, ecx
 	jc	StringDim_new
 	or	eax, eax
 	jz	StringDim_new
 	sub	eax, SIZEOF_FASTSTRING
-	call	MemoryReAlloc
+;	 call	 @Memblock@$bctr$qqrrx8Memblock
+;	 lea	 edx, [ebx+FastString.MemBlock - SIZEOF_FASTSTRING]
+	call	@Memblock@Resize$qqrul
 	jmp	StringRedim_exit
 StringDim_new:
-	call	MemoryAlloc
+	push	eax
+	push	eax
+	mov	eax, esp
+	call	@Memblock@$bctr$qqrul
+	pop	ebx
+	pop	eax
+;	 pop	 dword [ebx+FistString.MemBlock]
+;	 mov	 ebx, [eax+MemBlock.Ptr]
+	mov	[ebx+FastString.MemBlock], eax
 StringRedim_exit:
 	pop	ecx
 	pop	edx
 	jc	StringRedim_error
-	mov	ebx, eax
-	mov	[eax+FastString.BufferSize], ecx
-	lock	inc	dword ptr[eax+FastString.RefCount]
+	mov	eax, ebx
+;	 mov	 [eax+FastString.BufferSize], ecx
+	lock	inc	dword ptr[ebx+FastString.RefCount]
 	add	eax, SIZEOF_FASTSTRING
 	mov	[edx], eax
 	mov	edi, eax
 StringRedim_error:
 	ret
-StringRedim	endp
 
 
 ;StringDim	proc	near
@@ -142,7 +136,6 @@ StringRedim	endp
 @FastString@$bctr$qqrv	proc	near
 	mov	dword ptr [eax], 0
 	ret
-@FastString@$bctr$qqrv	endp
 
 
 @FastString@$bdtr$qqrv	proc	near
@@ -154,10 +147,15 @@ StringFree:
 	jz	StringFree_exit
 	lock	dec	dword ptr[eax-SIZEOF_FASTSTRING+FastString.RefCount]
 	jnz	StringFree_exit
-	call	MemoryFree
+	sub	eax, SIZEOF_FASTSTRING
+	push	dword ptr[eax+FastString.MemBlock]
+	push	eax
+	mov	eax, esp
+	call	@Memblock@$bdtr$qqrv
+	pop	eax
+	pop	eax
 StringFree_exit:
 	ret
-@FastString@$bdtr$qqrv	endp
 
 
 Clear	proc	near
@@ -166,14 +164,12 @@ Clear	proc	near
 	pop	eax
 	mov	dword ptr[eax], 0
 	ret
-Clear	endp
 
 
 @FastString@$basg$qqrxo proc	near
 	call	Clear
 @FastString@$bctr$qqrxo:
 	ret
-@FastString@$basg$qqrxo endp
 
 
 @FastString@$basg$qqrxc proc	near
@@ -185,7 +181,6 @@ Clear	endp
 	movsx	edx, byte ptr[esp]
 	pop	ecx
 	jmp	CreateIntegerNumber
-@FastString@$basg$qqrxc endp
 
 
 @FastString@$basg$qqrxuc	proc	near
@@ -196,7 +191,6 @@ Clear	endp
 	and	edx,0ffh
 	xor	ecx, ecx
 	jmp	Construct_string_from_number
-@FastString@$basg$qqrxuc	endp
 
 
 @FastString@$basg$qqrxs proc	near
@@ -208,7 +202,6 @@ Clear	endp
 	movsx	edx, word ptr[esp]
 	pop	ecx
 	jmp	CreateIntegerNumber
-@FastString@$basg$qqrxs endp
 
 
 @FastString@$basg$qqrxus	proc	near
@@ -219,7 +212,6 @@ Clear	endp
 	and	edx,0ffffh
 	xor	ecx, ecx
 	jmp	Construct_string_from_number
-@FastString@$basg$qqrxus	endp
 
 
 @FastString@$basg$qqrxi proc	near
@@ -336,7 +328,6 @@ CreateIntegerNumber:
 ;	pop	edi
 ;	pop	eax
 ;	ret
-@FastString@$basg$qqrxi endp
 
 
 @FastString@$basg$qqrxui	proc	near
@@ -350,7 +341,6 @@ CreateIntegerNumber:
 ;Ctr_convert:
 	xor	ecx, ecx
 	jmp	Construct_string_from_number
-@FastString@$basg$qqrxui	endp
 
 
 @FastString@$basg$qqrxj proc	near
@@ -388,21 +378,21 @@ Construct_string_from_number:
 	; StringRedim ;out - eax: pointer
 	mov	esi, edx
 	call	StringRedim ;out - eax: pointer
-	jc	Assign_StringRedim_error
+	jc	 Assign_StringRedim_error
 
 ;	push	eax
-;	push	ecx
+;	 push	 ecx
 ;	mov	eax, [eax]
 ;	or	eax, eax
 ;	jz	Assign_StringDim_new
-;	sub	eax, SIZEOF_FASTSTRING
+;	sub		eax, SIZEOF_FASTSTRING
 ;	call	MemoryReAlloc
 ;	jmp	Assign_StringRedim_exit
 ;Assign_StringDim_new:
 ;	call	MemoryAlloc
 ;Assign_StringRedim_exit:
-;	pop	ecx
-;	jc	Assign_StringRedim_error
+;	pop		      ecx
+;	jc	  Assign_StringRedim_error
 ;	mov	esi, eax
 ;	mov	[eax+FastString.BufferSize], ecx
 ;	add	eax, SIZEOF_FASTSTRING
@@ -411,7 +401,7 @@ Construct_string_from_number:
 ;	mov	edi, eax
 
 	popfd
-	pop	eax
+	pop	 eax
 ;	xchg	edi, [esp]
 ;	xchg	eax, edi
 	; SignCheck
@@ -428,7 +418,7 @@ Construct_string_from_number:
 	mov	byte ptr[edi], '-'
 	jmp	Assign_SignCheck_add1
 Assign_SignCheck_plus:
-	test	[ebx+FastString.Mode], FORCE_SIGN
+	test	byte ptr[ebx+FastString.Mode], FORCE_SIGN
 	jz	Assign_SignCheck_exit
 	mov	byte ptr[edi], '+'
 Assign_SignCheck_add1:
@@ -453,7 +443,6 @@ Assign_StringRedim_error:
 	popfd
 	pop	ecx
 	jmp	Assign_exit
-@FastString@$basg$qqrxj endp
 
 
 @FastString@$basg$qqrxuj	proc	near
@@ -461,7 +450,6 @@ Assign_StringRedim_error:
 @FastString@$bctr$qqrxuj:
 	clc
 	jmp	Construct_string_from_qword
-@FastString@$basg$qqrxuj	endp
 
 
 @FastString@$basg$qqrxf proc	near
@@ -497,7 +485,6 @@ AssignFloat_StringRedim_error:
 	pop	ebx
 	pop	eax
 	ret
-@FastString@$basg$qqrxf endp
 
 
 @FastString@$basg$qqrxd proc	near
@@ -505,7 +492,6 @@ AssignFloat_StringRedim_error:
 @FastString@$bctr$qqrxd:
 	mov	ecx, 12
 	jmp	AssignFloat
-@FastString@$basg$qqrxd endp
 
 
 @FastString@$basg$qqrxg proc	near
@@ -513,44 +499,7 @@ AssignFloat_StringRedim_error:
 @FastString@$bctr$qqrxg:
 	mov	ecx, 20
 	jmp	AssignFloat
-@FastString@$basg$qqrxg endp
 
-
-@FastString@Unique$qqrv proc	near
-	mov	edx, [eax]
-	or	edx, edx
-	jz	Unique_exit
-	lock	dec	dword ptr[edx-SIZEOF_FASTSTRING+FastString.RefCount]
-	jnz	Unique_make_new_string
-	lock	inc	dword ptr[edx-SIZEOF_FASTSTRING+FastString.RefCount]
-Unique_exit:
-	ret
-Unique_make_new_string:
-	push	ebx
-	push	esi
-	push	edi
-	lea	esi, [edx-SIZEOF_FASTSTRING+FastString.Length]
-	mov	ecx, [edx-SIZEOF_FASTSTRING+FastString.BufferSize]
-	stc
-	call	StringRedim
-	lodsd
-	stosd
-	lea	ecx, [eax + SIZEOF_FASTSTRING - 2 * SIZEOF_INT]
-;	call	SetupDefaultCodepage
-CopyString:
-	mov	edx, ecx
-	shr	ecx, 2
-	repz	movsd
-	and	edx, 3
-	jz	CopyString_exit
-	mov	ecx, edx
-	repz	movsb
-CopyString_exit:
-	pop	edi
-	pop	esi
-	pop	ebx
-	ret
-@FastString@Unique$qqrv endp
 
 
 GetBufferSizeFromStringLength	proc	near
@@ -575,7 +524,6 @@ Size_greater_64KW:
 Size_greater_512KW:
 	add	ecx, 400h
 	ret
-GetBufferSizeFromStringLength	endp
 
 
 @FastString@$basg$qqrrx17System@AnsiString	proc	near
@@ -610,10 +558,9 @@ Create_from_ansistring_empty:
 	call	StringRedim
 	pop	ecx
 	mov	[ebx+FastString.Length], ecx
-	mov	[ebx+FastString.Mode], 0
+	mov	byte ptr[ebx+FastString.Mode], 0
 	call	SetupDefaultCodepage
 	jmp	CopyString
-@FastString@$basg$qqrrx17System@AnsiString	endp
 
 
 @FastString@$basg$qqrrx17System@WideString	proc	near
@@ -649,18 +596,18 @@ Create_from_ansistring_empty:
 	pop	ecx
 	mov	[ebx + FastString.Length], ecx
 	shl	ecx, 1
-	mov	[ebx + FastString.Mode], 0
-	mov	[ebx + FastString.CodePage.Type], WIDECHARCP
+	mov	byte ptr[ebx + FastString.Mode], 0
+;	 mov	 [ebx + FastString.CodePage.Type], WCHARCP
+	mov	eax, [ebx + FastString.Locale],
+	mov	byte ptr[eax + Locale.CPType], WCHARCP
 	jmp	CopyString
 	ret
-@FastString@$basg$qqrrx17System@WideString	endp
 
 
 @FastString@$basg$qqrrx11MathVariant	proc	near
 	call	Clear
 @FastString@$bctr$qqrrx11MathVariant:
 	ret
-@FastString@$basg$qqrrx11MathVariant	endp
 
 
 @FastString@$basg$qqrrx10FastString	proc	near
@@ -670,23 +617,25 @@ Create_from_ansistring_empty:
 	lock	inc	dword ptr[ecx-SIZEOF_FASTSTRING+FastString.RefCount]
 	mov	[eax], ecx
 	ret
-@FastString@$basg$qqrrx10FastString	endp
 
 
 SetupDefaultCodepage	proc	near
 	;in
 	;ebx: pointer to FastString data
+;	;ecx: destructed
 	push	ecx
 	push	edx
-	call	GetSystemCodepage
-	mov	[ebx+FastString.CodePage.Page], ax
-	mov	[ebx+FastString.CodePage.Type], 0
+;	 call	 @Locale@GetSystemCodepage$qqrv
+	lea	eax, [ebx+FastString.Locale]
+	call	@Locale@$bctr$qqrv
+;	 mov	 ecx, [ebx+FastString.Locale]
+;	 mov	 [eax+Locale.CP], ax
+;	 mov	 byte ptr[eax+Locale.CPType], 0
 	pop	edx
 	pop	ecx
 ;	mov	[ebx+FastString.CodePage.Page], 1251
 ;	mov	[ebx+FastString.CodePage.Type], WINANSICP
 	ret
-SetupDefaultCodepage	endp
 
 
 Asg_convert_loop	proc	near
@@ -732,16 +681,15 @@ Asg_convert_loop_back:
 	jmp	Asg_convert_loop_back
 Asg_convert_loop_exit:
 	ret
-Asg_convert_loop	endp
 
 
 FloatSignCheck	proc	near
 	;in
 	;edi: pointer to string buffer
 	;ebx: pointer to begin of faststring buffer
-	;st(0): floating point value
+	;st0: floating point value
 	;out
-	;st(0): floating point absolute value
+	;st0: floating point absolute value
 	ftst
 ;	fstsw	ax
 	jfge	FloatSignCheck_plus
@@ -751,28 +699,27 @@ FloatSignCheck	proc	near
 	ret
 ;	jmp	FloatSignCheck_add1
 FloatSignCheck_plus:
-	test	[ebx+FastString.Mode], FORCE_SIGN
+	test	byte ptr[ebx+FastString.Mode], FORCE_SIGN
 	jz	FloatSignCheck_exit
 	mov	byte ptr[edi], '+'
 FloatSignCheck_add1:
 	inc	edi
 FloatSignCheck_exit:
 	ret
-FloatSignCheck	endp
 
 
 StdFloatConvert proc	near
 	;in
 	;edi: pointer to string buffer
 	;ecx: number of symbols after floating point
-	;st(0): floating point absolute value
+	;st0: floating point absolute value
 
-	fld	st(0)
+	fld	st0
 	fld	tbyte ptr[float_1e10]
-	fcomp	st(1)
+	fcomp	st1
 	jfl	ExpFloatConvert
 	frndint
-	fsub	st(1), st(0)
+	fsub	st1, st0
 	sub	esp, 10h
 	fistp	qword ptr[esp]
 	push	ecx
@@ -781,18 +728,18 @@ StdFloatConvert proc	near
 	xor	ecx, ecx
 	fld	tbyte ptr[float_10]
 	fyl2x
-	fld	st(0)
+	fld	st0
 	frndint
-	fsub	st(1),st(0)
-	fxch	st(1)
+	fsub	st1,st0
+	fxch	st1
 	f2xm1
 	fld1
-	faddp	st(1), st(0)
+	faddp	st1, st0
 	fscale
-	fxch	st(1)
-	ffree	st(0)
+	fxch	st1
+	ffree	st0
 	fincstp
-	fmulp	st(1), st(0)
+	fmulp	st1, st0
 	fistp	qword ptr[esp+8]
 	pop	esi
 	pop	eax
@@ -812,22 +759,22 @@ StdFloatConvert_int_value:
 
 
 ;	fld	tbyte ptr[float_10]
-;	fxch	st(1)
-;	fld	st(0)
+;	fxch	st1
+;	fld	st0
 ;	fincstp
 ;StdFloatConvert_loop1:
-;	fcom	st(1)
+;	fcom	st1
 ;	jfl	StdFloatConvert_check_zero
 ;	fprem
 ;	push	eax
 ;	inc	dl
 ;	fistp	dword ptr[esp]
-;	fdiv	st(6), st(0)
-;	fld	st(6)
+;	fdiv	st6, st0
+;	fld	 st6
 ;	cmp	byte ptr[esp], 0ah
 ;	jnz	StdFloatConvert_loop1
 ;	mov	byte ptr[esp], 0
-;	jmp	StdFloatConvert_loop1
+;	 jmp	    StdFloatConvert_loop1
 ;StdFloatConvert_check_zero:
 ;	push	eax
 ;	fistp	dword ptr[esp]
@@ -839,34 +786,34 @@ StdFloatConvert_int_value:
 ;	dec	dl
 ;	jnz	StdFloatConvert_loop1_back
 ;StdFloatConvert_loop1_back_exit:
-;	ffree	st(6)
-;	fxch	st(1)
+;	ffree	st6
+;	fxch	st1
 ;	push	ecx
 ;	fild	dword ptr[esp]
 ;	pop	ecx
-;	fld	st(2)
+;	fld	st2
 ;	fyl2x
-;	fld	st(0)
+;	fld	st0
 ;	frndint
-;	fsub	st(1),st(0)
-;	fxch	st(1)
+;	fsub	st1,st0
+;	fxch	st1
 ;	f2xm1
 ;	fld1
-;	faddp	st(1), st(0)
+;	faddp	st1, st0
 ;	fscale
-;	fxch	st(1)
-;	ffree	st(0)
+;	fxch	st1
+;	ffree	st0
 ;	fincstp
-;	fmulp	st(1), st(0)
-;	fld	st(0)
+;	fmulp	st1, st0
+;	fld	st0
 ;	fincstp
 ;	mov	dh, cl
 ;StdFloatConvert_loop:
 ;	fprem
 ;	push	      eax
 ;	fistp	dword ptr[esp]
-;	fdiv	st(6), st(0)
-;	fld	st(6)
+;	fdiv	st6, st0
+;	fld	st6
 ;	cmp	byte ptr[esp], 0ah
 ;	jnz	StdFloatConvert_loop_next
 ;	mov	[esp], ch
@@ -898,39 +845,39 @@ StdFloatConvert_int_value:
 ;	fld	tbyte ptr[float_1_5]
 ;	fld1
 ;	fscale
-;	sub	esp, 12
+;	sub	 esp, 12
 ;	fst	tbyte ptr[esp]
-	fld	st(0)
+	fld	st0
 	fld	tbyte ptr[float_1e10]
-	fcomp	st(1)
+	fcomp	st1
 ;	fstsw	ax
 ;	test	ah,20;>=
 ;	jz	ExpFloatConvert
 	jfl	ExpFloatConvert
 	xor	edx, edx
 	frndint
-	fsub	st(1), st(0)
+	fsub	st1, st0
 	fld	tbyte ptr[float_10]
-	fxch	st(1)
-	fld	st(0)
+	fxch	st1
+	fld	st0
 	fincstp
 StdFloatConvert_loop1:
-	fcom	st(1)
+	fcom	st1
 	jfl	StdFloatConvert_check_zero
 	fprem
 ;	fld	tbyte ptr[float_0_1]
-;	fmulp	st(1), st(0)
-;	fld	st(0)
+;	fmulp		    st1, st0
+;	fld	st0
 ;	frndint
-;	fxch	st(1)
-;	fsub	st(0), st(1)
+;	fxch	st1
+;	fsub	st0, st1
 ;	fld	tbyte ptr[float_10]
-;	fmulp	st(1), st(0)
+;	fmulp	st1, st0
 	push	eax
 	inc	dl
 	fistp	dword ptr[esp]
-	fdiv	st(6), st(0)
-	fld	st(6)
+	fdiv	st6, st0
+	fld	st6
 	cmp	byte ptr[esp], 0ah
 	jnz	StdFloatConvert_loop1
 	mov	byte ptr[esp], 0
@@ -948,19 +895,19 @@ StdFloatConvert_loop1_back:
 	dec	dl
 	jnz	StdFloatConvert_loop1_back
 StdFloatConvert_loop1_back_exit:
-	ffree	st(6)
-	fxch	st(1)
+	ffree	st6
+	fxch	st1
 
 
 ;	push	ecx
 ;	fild	dword ptr[esp]
 ;	pop	ecx
 ;	fldl2t
-;	fmulp	st(1)
-;	fld	st(0)
+;	fmulp	st1
+;	fld	st0
 ;	frndint
-;	fsub	st(1), st(0)
-;	fxch	st(1)
+;	fsub	st1, st0
+;	fxch	st1
 ;	fld1
 ;	fscale
 ;	fscale
@@ -968,41 +915,41 @@ StdFloatConvert_loop1_back_exit:
 	push	ecx
 	fild	dword ptr[esp]
 	pop	ecx
-	fld	st(2)
+	fld	st2
 	fyl2x
-	fld	st(0)
+	fld	st0
 	frndint
-	fsub	st(1),st(0)
-	fxch	st(1)
+	fsub	st1,st0
+	fxch	st1
 	f2xm1
 	fld1
-	faddp	st(1), st(0)
+	faddp	st1, st0
 	fscale
-	fxch	st(1)
-	ffree	st(0)
+	fxch	st1
+	ffree	st0
 	fincstp
-	fmulp	st(1), st(0)
+	fmulp	st1, st0
 ;	fld	tbyte ptr[float_10]
-;	fxch	st(1)
-	fld	st(0)
+;	fxch	st1
+	fld	st0
 	fincstp
 	mov	dh, cl
 StdFloatConvert_loop:
 	fprem
 
 ;	fld	tbyte ptr[float_0_1]
-;	fmulp	st(1), st(0)
-;	fld	st(0)
+;	fmulp	st1, st0
+;	fld	st0
 ;	frndint
-;	fxch	st(1)
-;	fsub	st(0), st(1)
+;	fxch	st1
+;	fsub	st0, st1
 ;	fld	tbyte ptr[float_10]
-;	fmulp	st(1), st(0)
+;	fmulp	st1, st0
 
 	push	eax
 	fistp	dword ptr[esp]
-	fdiv	st(6), st(0)
-	fld	st(6)
+	fdiv	st6, st0
+	fld	st6
 	cmp	byte ptr[esp], 0ah
 	jnz	StdFloatConvert_loop_next
 	mov	[esp], ch
@@ -1027,11 +974,11 @@ StdFloatConvert_loop_check:
 
 
 ;	fld	tbyte ptr[float_0_1]
-;	fmulp	st(1), st(0)
+;	fmulp	st1, st0
 ;	fdecstp
-;	ffree	st(0)
+;	ffree	st0
 ;	fdecstp
-;	ffree	st(0)
+;	ffree	st0
 ;	fdecstp
 
 	call	GetFloatingPointSymbol
@@ -1051,25 +998,25 @@ StdFloatConvert_loop_back_exit:
 	ret
 ;;	sub	esp, 12
 ;;	fst	tbyte ptr[esp]
-;	fld	st(0)
+;	fld	st0
 ;	fld	tbyte ptr[float_1e10]
-;	fcomp	st(1)
+;	fcomp	st1
 ;;	fstsw	ax
 ;;	test	ah,20;>=
 ;;	jz	ExpFloatConvert
 ;	jfl	ExpFloatConvert
 ;	xor	edx, edx
 ;	frndint
-;	fsub	st(1), st(0)
-;	fxch	st(1)
+;	fsub	st1, st0
+;	fxch	st1
 ;	lea	eax, [edx+ecx*4]
 ;	sub	esp, eax
 ;StdFloatConvert_loop:
 ;	fld	tbyte ptr[float_10]
-;	fmulp	st(1), st(0)
-;	fld	st(0)
+;	fmulp	st1, st0
+;	fld	st0
 ;	frndint
-;	fsub	st(1), st(0)
+;	fsub	st1, st0
 ;	push	eax
 ;;	fistp	dword ptr[esp]
 ;	fistp	dword ptr[esp+edx*4]
@@ -1086,7 +1033,7 @@ StdFloatConvert_loop_back_exit:
 ;	sub	dl, dh
 ;	xor	dh, dh
 ;;	fld	tbyte ptr[esp]
-;	ffree	st(0)
+;	ffree	st0
 ;	fincstp
 ;StdFloatConvert_loop1:
 ;	ftst
@@ -1095,13 +1042,13 @@ StdFloatConvert_loop_back_exit:
 ;;	jnz	StdFloatConvert_check_zero
 ;	jfe	StdFloatConvert_check_zero
 ;	fld	tbyte ptr[float_0_1]
-;	fmulp	st(1), st(0)
-;	fld	st(0)
+;	fmulp	st1, st0
+;	fld	st0
 ;	frndint
-;	fxch	st(1)
-;	fsub	st(0), st(1)
+;	fxch	st1
+;	fsub	st0, st1
 ;	fld	tbyte ptr[float_10]
-;	fmulp	st(1), st(0)
+;	fmulp	st1, st0
 ;	push	eax
 ;	inc	dh
 ;	fistp	dword ptr[esp]
@@ -1136,30 +1083,41 @@ StdFloatConvert_loop_back_exit:
 ;StdFloatConvert_exit:
 ;	lea	esp, [esp+ecx*4]
 ;	ret
-StdFloatConvert endp
 
 
 ExpFloatConvert proc	near
 	ret
-ExpFloatConvert endp
 
 
 GetFloatingPointSymbol	proc	near
 	mov	eax, ','
 	ret
-GetFloatingPointSymbol	endp
+
+CopyString:
+	mov	edx, ecx
+	shr	ecx, 2
+	repz	movsd
+	and	edx, 3
+	jz	CopyString_exit
+	mov	ecx, edx
+	repz	movsb
+CopyString_exit:
+	pop	edi
+	pop	esi
+	pop	ebx
+	ret
 
 
+	section _DATA
 
-.data
-float_1e10	label	tbyte
+float_1e10:
 	db	0,0,0,0,0,0f9h,2,95h,20h,40h
 ;float_0_1	label	tbyte
 ;	db	0,0d0h,0cch,0cch,0cch,0cch,0cch,0cch,0fbh,3fh
-float_10	label	tbyte
+float_10:
 	db	0,0,0,0,0,0,0,0a0h,2,40h
 ;float_1_5	label	tbyte
 ;	db	0,0,0,0,0,0,0,0c0h,0ffh,3fh
 
 
-end
+;end

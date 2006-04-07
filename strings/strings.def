@@ -1,0 +1,137 @@
+;[]-----------------------------------------------------------------[]
+;|   STRINGS.DEF -- strings definition	file			     |
+;[]-----------------------------------------------------------------[]
+;
+; $Copyright: 2005$
+; $Revision: 1.1.1.1 $
+;
+
+LIBRARY strings.dll INITINSTANCE
+CODE PRELOAD EXECUTEREAD FIXED NONDISCARDABLE
+DATA SINGLE READWRITE PRELOAD SHARED
+HEAPSIZE 0x1000, 0x100000
+DESCRIPTION 'String class library'
+;SUBSYSTEM NATIVE, 4.0
+
+IMPORTS
+ZCLKERNL.@Memblock@$bctr$qqrul ;MemAlloc
+ZCLKERNL.@Memblock@Resize$qqrul
+ZCLKERNL.@Memblock@$bctr$qqrrx8Memblock ;MemRealloc
+ZCLKERNL.@Memblock@$bdtr$qqrv ; MemFree
+LOCALE.@Locale@$bctr$qqrv
+LOCALE.@Locale@$bdtr$qqrv
+LOCALE.@Locale@GetSystemCodepage$qqrv
+LOCALE.@Locale@$bdtr$qqrv
+;ZCLKERNL.decimal_constant
+
+EXPORTS
+;Fast string functions
+_mainCRTStartup
+@FastString@$bctr$qqrv
+
+@FastString@$bctr$qqrxo
+@FastString@$bctr$qqrxc
+@FastString@$bctr$qqrxuc
+@FastString@$bctr$qqrxs
+@FastString@$bctr$qqrxus
+@FastString@$bctr$qqrxi
+@FastString@$bctr$qqrxl
+@FastString@$bctr$qqrxui
+@FastString@$bctr$qqrxul
+@FastString@$bctr$qqrxj
+@FastString@$bctr$qqrxuj
+@FastString@$bctr$qqrxf
+@FastString@$bctr$qqrxd
+@FastString@$bctr$qqrxg
+@FastString@$bctr$qqrpxc
+@FastString@$bctr$qqrpxb
+@FastString@$bctr$qqrrx17System@AnsiString
+@FastString@$bctr$qqrrx17System@WideString
+@FastString@$bctr$qqrrx11MathVariant
+@FastString@$bctr$qqrrx10FastString
+@FastString@$bdtr$qqrv
+
+@FastString@$oo$xqqrv
+@FastString@$oc$xqqrv
+@FastString@$ozc$xqqrv
+@FastString@$ouc$xqqrv
+@FastString@$os$xqqrv
+@FastString@$ous$xqqrv
+@FastString@$oi$xqqrv
+@FastString@$ol$xqqrv
+@FastString@$oui$xqqrv
+@FastString@$oul$xqqrv
+@FastString@$oj$xqqrv
+@FastString@$ouj$xqqrv
+@FastString@$of$xqqrv
+@FastString@$od$xqqrv
+@FastString@$og$xqqrv
+@FastString@$opv$xqqrv
+@FastString@$opb$qqrv
+@FastString@$opc$qqrv
+@FastString@$o17System@AnsiString$qqrv
+@FastString@$o17System@WideString$qqrv
+;
+@FastString@ConvertTo$qqrul
+@FastString@SetCodePage$qqrul
+;check f
+@FastString@IsDelimiter$xqqrrx10FastStringui
+@FastString@IsEmpty$xqqrv
+@FastString@IsPathDelimiter$xqqrui
+;common
+@FastString@GetLength$xqqrv
+@FastString@SetLegnth$qqrui
+;cp
+@FastString@ConvertTo$qqrul
+@FastString@SetCodePage$qqrul
+
+@FastString@Compare$xqqrrx10FastString
+@FastString@Compare$xqqrrx10FastStringrx4Mode
+@FastString@$bequ$xqqrrx10FastString
+@FastString@$bneq$xqqrrx10FastString
+@FastString@$bblw$xqqrrx10FastString
+@FastString@$babw$xqqrrx10FastString
+@FastString@$bble$xqqrrx10FastString
+@FastString@$babe$xqqrrx10FastString
+
+@FastString@$bctr$qqrrx8Currency
+@FastString@$basg$qqrrx8Currency
+@FastString@o8Currency$xqqrv
+
+@FastString@$bctr$qqrrx8DateTime
+@FastString@$basg$qqrrx8DateTime
+@FastString@o8DateTime$xqqrv
+
+@FastString@printf$qqrrx10FastString7Variant
+@FastString@sprintf$qqrrx10FastString7Variant
+@FastString@printf$rrx10FastString
+@FastString@sprintf$rrx10FastString
+
+@FastString@$badd$qqrrx10FastString7Variant
+@FastString@Add$qqrrx10FastString
+@FastString@$bpls$xqqrrx10FastString7Variant
+@FastString@$bpls$xqqrrx10FastString
+@FastString@Insert$qqrrx10FastStringui
+@FastString@Delete$qqrrx10FastString
+@FastString@Delete$qqrruiui
+@FastString@Trim$xqqrv
+@FastString@TrimRight$xqqrv
+@FastString@TrimLeft$xqqrv
+@FastString@Unique$qqrv
+@FastString@LowerCase$qqrrv
+@FastString@UpperCase$qqrrv
+
+@FastString@Match$xqqrrx10FastString
+@FastString@Match$xqqrrx8FastText
+
+@FastString@Pos$xqqri
+@FastString@Seek$xqqrrx10FastString
+@FastString@LastDelimiter$xqqrrx10FastString
+
+@FastString@$obrk$xqqrui
+
+
+;Probe and test functions
+;GetMemInfoFuncs
+;LoadBorlandMemoryFuncs
+;DllEntryPoint1

@@ -1,3 +1,10 @@
+//[]-----------------------------------------------------------------[]
+//|   STRINGS.H -- strings header file				     |
+//[]-----------------------------------------------------------------[]
+//
+// $Copyright: 2005$
+// $Revision: 1.1.1.1 $
+//
 #if !defined(STRINGS_H)
 #define STRINGS_H
 
@@ -11,9 +18,12 @@
 #define utf15	    0x8000
 #define ruft	    0xc000
 
+typedef unsigned char byte;
+typedef unsigned short word;
 typedef unsigned long dword;
+typedef unsigned __int64 qword;
 
-class __declspec(dllexport) FastString
+class __declspec(dllimport) FastString
 {
 public:
   // Default Ctr

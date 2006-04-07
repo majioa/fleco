@@ -1,5 +1,7 @@
-faststring
+fleco
 ======
 Licence: MIT
 
-Realization of FastString library that is similar to Borland's AnsiString, and sligntly to Microsoft's CString
+FleCo is a library that includes modules:
+ * FastString library, that is similar to Borland's AnsiString, and sligntly to Microsoft's CString
+ * Locale that allows to use a CP in apps
