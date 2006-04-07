@@ -1,12 +1,10 @@
-#include "../src/strings.h"
+#include <include/strings.h>
 
-#include <windows.h>
 #ifdef __BORLANDC__
   #pragma argsused
 #endif
-int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
+int main()
 {
-//   MessageBox(NULL,"","",MB_OK);
 //  FastString a("-0x31");
 //  FastString a("-0x31");
 //  FastString a("-0x31");
@@ -40,40 +38,4 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
   if(f1 == 0)
     j = 1;
 
-//  long (*x)[1000];
-//  x =  malloc(1000*1000*sizeof(long));
-//  x[i][j] = 0;
-
-  void *hin = 0;
- // for(;;)
-//    hin = LoadLibrary("strings.dll");
-//  int  i =0;
-/*  i = GetLastError();
-  LPVOID lpMsgBuf;
-
-FormatMessage(
-    FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-    NULL,
-    i,
-    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-    (LPTSTR) &lpMsgBuf,
-    0,
-    NULL
-);
-// Display the string.
-//MessageBox( NULL, (const char *)lpMsgBuf, "GetLastError", MB_OK|MB_ICONINFORMATION );
-
-// Free the buffer.
-LocalFree( lpMsgBuf );
-
-
-//  int i = a;
-/*  char c = a;
-  short s = a;
-  float f = a;
-  double d = a;
-  long double extendedf = a;
-  void *p = a;
-  char *s1 = (char *)p;*/
-//  return !hin;
 }
