@@ -1,0 +1,24 @@
+;[]-----------------------------------------------------------------[]
+;|   STRINGS.DEF -- strings definition	file			     |
+;[]-----------------------------------------------------------------[]
+;
+; $Copyright: 2005$
+; $Revision: 1.1.1.1 $
+;
+
+LIBRARY locale.dll INITINSTANCE
+CODE PRELOAD EXECUTEREAD FIXED NONDISCARDABLE
+DATA SINGLE READWRITE PRELOAD SHARED
+HEAPSIZE 0x1000, 0x100000
+DESCRIPTION 'Locale class library'
+;SUBSYSTEM NATIVE, 4.0
+
+IMPORTS
+KERNEL32.GetACP
+
+EXPORTS
+@Locale@$bctr$qqrv
+@Locale@$bdtr$qqrv
+@Locale@GetSystemCodepage$qqrv
+@Locale@GetDecimalConstant$qqrv
+@Locale@$bdtr$qqrv

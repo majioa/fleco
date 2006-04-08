@@ -9,7 +9,7 @@
 ;int __fastcall Length() const;
 ;AnsiString& __fastcall SetLength(int newLength);
 
-	%include 'constant.inc'
+	%include '../defs.inc'
 	GLOBAL	_mainCRTStartup
 	GLOBAL	@FastString@GetLength$xqqrv
 	GLOBAL	@FastString@SetLegnth$qqrui

@@ -1,9 +1,9 @@
 ;[]-----------------------------------------------------------------[]
-;|   CONSTANT.INC -- strings include file			     |
+;|   DEFS.INC -- locale definitions file			     |
 ;[]-----------------------------------------------------------------[]
 ;
 ; $Copyright: 2005$
-; $Revision: 1.2 $
+; $Revision: 1.1 $
 ;
 	bits 32
 
@@ -17,7 +17,6 @@
 %define endp
 %define tbyte tword
 %define offset
-
 
 RUSSIAN_CP_COUNT	equ	  6
 
@@ -65,6 +64,7 @@ SIZEOF_WCHAR_T		equ	  2
 SIZEOF_INT		equ	  4
 SIZEOF_FASTSTRING	equ	  24
 SIZEOF_CHECKSYMBOL	equ	  12
+SIZEOF_LOCALE		equ	4
 
 ;Code page Flags
 ;0 - 16 bit
@@ -126,6 +126,7 @@ RUTFCP	     equ       11b
 
 
 
+
 %macro	jfe	1
 	fstsw	ax
 	test	ah, 1000000b
@@ -160,6 +161,7 @@ RUTFCP	     equ       11b
 
 ;strings structure constants
 
+
 struc CPData
 .Offset:  resd	    1	    ;offset for symbol getting
 endstruc
@@ -191,6 +193,7 @@ endstruc
 struc Locale
 .CP:	  resw	    1
 .CPType:  resb	    1
+.CPType1: resb      1
 endstruc
 
 struc MemBlock
@@ -209,5 +212,9 @@ struc FastString
 .MemBlock:	    resd      1
 endstruc
 
-
-
+CP866	equ	0
+CP1251	equ	0
+MAC	equ	0
+KOI8R	equ	0
+CP10007 equ	0
+CP8859_5 equ	0

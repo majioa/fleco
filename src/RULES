@@ -1,0 +1,32 @@
+#[]-----------------------------------------------------------------[]
+#|   Makefile -- makefile					     |
+#[]-----------------------------------------------------------------[]
+#
+# $Copyright: 2005$
+# $Revision: 1.0 $
+#
+
+ifeq ($(OS),WIN32)
+    LFLAGS= -mi386pe --disable-stdcall-fixup
+else
+    ifeq ($(OS),LINUX)
+	LFLAGS= -melf_i386 -x --no-demangle 
+    endif
+endif
+OBJDIR=$(TOPDIR)/obj
+BINDIR=$(TOPDIR)/bin
+DEFDIR=$(TOPDIR)/src/defines
+LIB=
+VPATH=$(SRCDIR):$(OBJDIR):$(BINDIR):$(DEFDIR)
+
+AS=nasm
+LD=ld
+AFLAGS=-f elf -O4
+LFLAGS+= -call_shared -shared -E   #Link flags with gcc
+
+%.o: %.asm
+	$(AS) $(AFLAGS) -l $(<:.asm=.lst) -o $(OBJDIR)/$@ $< -E $(OBJDIR)/$(@:.o=.err)	-d$(OS)
+
+$(BIN): $(OBJ) $(DEF) $(RES) # $(EXE) is dependent on all of the files in $(OBJ) to exist
+	$(LD) $(LFLAGS) $(LLFLAGS)  $(OBJDIR)/$(OBJ) -o $(BINDIR)/$@
+
